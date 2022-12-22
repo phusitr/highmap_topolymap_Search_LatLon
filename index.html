@@ -1,0 +1,112 @@
+<html>
+
+<script src="https://code.highcharts.com/maps/highmaps.js"></script>
+<script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/maps/modules/offline-exporting.js"></script>
+<script src="https://code.highcharts.com/maps/modules/accessibility.js"></script>
+
+<style>
+    #container {
+        height: 100%;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    .loading {
+        margin-top: 10em;
+        text-align: center;
+        color: gray;
+    }
+</style>
+<!-- Create a search form -->
+<form id="search-form">
+    <input type="text" id="search-input" placeholder="Search for a country">
+    <button type="submit">Search</button>
+</form>
+
+<script>
+    (async () => {
+
+        const topology = await fetch(
+            'bkk.topo.json'
+        ).then(response => response.json());
+
+        // Initialize the chart
+        Highcharts.mapChart('container', {
+
+            chart: {
+                map: topology
+            },
+
+            title: {
+                text: 'Bangkok, Thailand'
+            },
+
+            accessibility: {
+                description: ''
+            },
+
+            mapNavigation: {
+                enabled: true
+            },
+
+            tooltip: {
+                headerFormat: '',
+                pointFormat: '<b>{point.name}</b><br>{point.data}'
+            },
+
+            series: [{
+                // Use the gb-all map with no data as a basemap
+                name: 'bkk-topoly-map',
+                borderColor: '#CCC',
+                nullColor: 'rgba(200, 200, 200, 0.3)',
+                showInLegend: true
+            }, {
+                // Specify points using lat/lon
+                type: 'mappoint',
+                name: 'Station',
+                accessibility: {
+                    point: {
+                        valueDescriptionFormat: '{xDescription}. Lat: {point.lat:.2f}, lon: {point.lon:.2f}.'
+                    }
+                },
+                color: '#D84F18',
+                data: [
+                    {
+                        name: 'Jatujak (Kasetsart University',
+                        data: 302,
+                        lat: 13.849048,
+                        lon: 100.569675
+                    },
+                    {
+                        name: 'Jatujak (Shinnawat Tower)',
+                        data: 123,
+                        lat: 13.825421,
+                        lon: 100.562680
+                    },
+                ]
+            }]
+        });
+
+    })();
+    const form = document.getElementById('search-form');
+    const input = document.getElementById('search-input');
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+
+        // Get the search query
+        const query = input.value;
+        console.log (query)
+        const series = Highcharts.charts[0].series[1];
+        const point = series.points.find(point => point.name === query);
+        // If a matching point was found, select it
+        if (point) {
+          point.select();
+        } else {
+          alert(`No data found for "${query}"`);
+        }
+    })
+</script>
+<div id="container"></div>
+
+</html>
